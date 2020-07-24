@@ -933,10 +933,10 @@ static bool fuzzycollidesolid(physent *d, const vec &dir, float cutoff, const cu
         float dist = distval; \
         if(dist > 0) return false; \
         if(dist <= bestdist) continue; \
+        if(d->type < ENT_CAMERA && dist < margin) continue; \
         if(!dir.iszero()) \
         { \
             if(dotval >= -cutoff*dir.magnitude()) continue; \
-            if(d->type<ENT_CAMERA && dotval < 0 && dist < margin) continue; \
         } \
         collidewall = normal; \
         bestdist = dist; \
