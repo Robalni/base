@@ -1557,30 +1557,57 @@ namespace client
             }
         }
 
-        std::vector<std::string> muts_vec;
-        if(muts_str && isnumeric(*muts_str))
+        if(muts_str && *muts_str)
         {
-            nextmuts = atoi(muts_str);
-        }
-        else if(muts_str && *muts_str)
-        {
-            explodelist(muts_str, muts_vec);
+            std::vector<std::string> muts_vec;
+            char *begin = muts_str;
+            char *end = NULL;
+            // Split the muts string on ' ' and '-' into muts_vec.
+            while(*begin)
+            {
+                if(end)
+                {
+                    if(*end == ' ' || *end == '-' || *end == '\0')
+                    {
+                        muts_vec.emplace_back(begin, end - begin);
+                        begin = end;
+                        end = NULL;
+                    }
+                    else end++;
+                }
+                else
+                {
+                    if(*begin != ' ' && *begin != '-')
+                    {
+                        end = begin;
+                    }
+                    else begin++;
+                }
+            }
+
             for(const std::string &mut : muts_vec)
             {
-                bool found_one = false;
-                for(auto possible_mut : mut_names)
+                if(isnumeric(*mut.c_str()))
                 {
-                    if(strcmp(possible_mut.name, mut.c_str()) == 0 && (1 << nextmode) & possible_mut.modes)
-                    {
-                        nextmuts |= possible_mut.val;
-                        found_one = true;
-                        break;
-                    }
+                    nextmuts |= atoi(mut.c_str());
                 }
-                if(!found_one)
+                else
                 {
-                    conoutft(CON_MESG, "\frmutator \"%s\" not found or incompatible with mode \"%s\"", mut.c_str(), mode_str);
-                    return;
+                    bool found_one = false;
+                    for(auto possible_mut : mut_names)
+                    {
+                        if(strcmp(possible_mut.name, mut.c_str()) == 0 && (1 << nextmode) & possible_mut.modes)
+                        {
+                            nextmuts |= possible_mut.val;
+                            found_one = true;
+                            break;
+                        }
+                    }
+                    if(!found_one)
+                    {
+                        conoutft(CON_MESG, "\frmutator \"%s\" not found or incompatible with mode \"%s\"", mut.c_str(), mode_str);
+                        return;
+                    }
                 }
             }
         }
