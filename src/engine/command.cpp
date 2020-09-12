@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "engine.h"
+#include "stats.h"
 
 bool interactive = false;
 
@@ -1672,9 +1673,14 @@ static void compilestatements(vector<uint> &code, const char *&p, int rettype, i
 
 static void compilemain(vector<uint> &code, const char *p, int rettype = VAL_ANY)
 {
+    uint64_t start_time = get_time_ns();
+
     code.add(CODE_START);
     compilestatements(code, p, VAL_ANY);
     code.add(CODE_EXIT|(rettype < VAL_ANY ? rettype<<CODE_RET : 0));
+
+    uint64_t end_time = get_time_ns();
+    stats_add(STAT_COMPILE, end_time - start_time);
 }
 
 uint *compilecode(const char *p)

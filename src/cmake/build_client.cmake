@@ -35,6 +35,7 @@ if(BUILD_CLIENT)
         engine/shader.cpp
         engine/shadowmap.cpp
         engine/sound.cpp
+        engine/stats.cpp
         engine/texture.cpp
         engine/ui.cpp
         engine/water.cpp
@@ -63,6 +64,7 @@ if(BUILD_CLIENT)
         engine/skelmodel.h
         engine/smd.h
         engine/sound.h
+        engine/stats.h
         engine/textedit.h
         engine/texture.h
         engine/version.h

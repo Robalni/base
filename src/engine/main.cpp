@@ -1,5 +1,6 @@
 // main.cpp: initialisation & main loop
 #include "engine.h"
+#include "stats.h"
 #include <signal.h>
 
 string caption = "";
@@ -1128,6 +1129,7 @@ int main(int argc, char **argv)
     {
         curtextscale = textscale;
         int elapsed = updatetimer(true);
+        uint64_t frame_start_time = get_time_ns();
         updatefps(frameloops, elapsed);
         checkinput();
         menuprocess();
@@ -1152,11 +1154,14 @@ int main(int argc, char **argv)
             UI::update();
             if(!minimized)
             {
+                uint64_t start_time = get_time_ns();
                 inbetweenframes = renderedframe = false;
                 gl_drawframe();
                 renderedframe = true;
                 swapbuffers();
                 inbetweenframes = true;
+                uint64_t end_time = get_time_ns();
+                stats_add(STAT_RENDER, end_time - start_time);
             }
             if(pixeling)
             {
@@ -1178,6 +1183,9 @@ int main(int argc, char **argv)
             }
             setcaption(game::gametitle(), game::gametext());
         }
+        uint64_t frame_end_time = get_time_ns();
+        stats_add(STAT_FRAME, frame_end_time - frame_start_time);
+        stats_next_frame();
     }
 
     ASSERT(0);

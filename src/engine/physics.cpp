@@ -4,6 +4,7 @@
 // very robust (uses discrete steps at fixed fps).
 #include "engine.h"
 #include "mpr.h"
+#include "stats.h"
 
 const int MAXCLIPPLANES = 1024;
 static clipplanes clipcache[MAXCLIPPLANES];
@@ -1186,6 +1187,7 @@ static inline bool octacollide(physent *d, const vec &dir, float cutoff, const i
 // all collision happens here
 bool collide(physent *d, const vec &dir, float cutoff, bool playercol, bool insideplayercol)
 {
+    uint64_t start_time = get_time_ns();
     collideinside = 0;
     hitplayer = NULL;
     hitflags = HITFLAG_NONE;
@@ -1193,7 +1195,10 @@ bool collide(physent *d, const vec &dir, float cutoff, bool playercol, bool insi
     ivec bo(int(d->o.x-d->radius), int(d->o.y-d->radius), int(d->o.z-d->height)),
          bs(int(d->o.x+d->radius), int(d->o.y+d->radius), int(d->o.z+d->aboveeye));
     bs.add(1);  // guard space for rounding errors
-    return octacollide(d, dir, cutoff, bo, bs) || (playercol && plcollide(d, dir, insideplayercol));
+    bool collided = octacollide(d, dir, cutoff, bo, bs) || (playercol && plcollide(d, dir, insideplayercol));
+    uint64_t end_time = get_time_ns();
+    stats_add(STAT_COLLIDE, end_time - start_time);
+    return collided;
 }
 
 float pltracecollide(physent *d, const vec &from, const vec &ray, float maxdist)

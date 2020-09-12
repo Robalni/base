@@ -2,6 +2,7 @@
 // runs dedicated or as client coroutine
 
 #include "engine.h"
+#include "stats.h"
 #include <signal.h>
 
 #ifdef WIN32

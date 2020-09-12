@@ -1,6 +1,7 @@
 // texture.cpp: texture slot management
 
 #include "engine.h"
+#include "stats.h"
 #include "SDL_image.h"
 
 #define FUNCNAME(name) name##1
@@ -1499,6 +1500,7 @@ uchar *loadalphamask(Texture *t)
 
 Texture *textureload(const char *name, int clamp, bool mipit, bool msg)
 {
+    uint64_t start_time = get_time_ns();
     string tname;
     copystring(tname, name);
     path(tname);
@@ -1512,6 +1514,8 @@ Texture *textureload(const char *name, int clamp, bool mipit, bool msg)
             t = newtexture(NULL, tname, s, clamp, mipit, false, false, compress, &anim);
         else t = notexture;
     }
+    uint64_t end_time = get_time_ns();
+    stats_add(STAT_LOAD, end_time - start_time);
     return t;
 }
 

@@ -1,5 +1,6 @@
 #include <vector>
 #include "game.h"
+#include "stats.h"
 
 namespace hud
 {
@@ -3528,6 +3529,112 @@ namespace hud
         return drawinventory(w, h, edge, top, bottom, fade);
     }
 
+    static void drawstats()
+    {
+        pushfont("default");
+        float x, y, w, h;
+        w = FONTW / 4;
+        float width = NUM_STAT_FRAMES * w;
+        float height = hudheight - FONTW * 10;
+        h = height;
+        float accum[NUM_STAT_FRAMES] = {0};
+        float posx = hudwidth - width - FONTW;
+        float posy = 0;
+        x = posx + width;
+        y = posy;
+        hudnotextureshader->set();
+
+        gle::defvertex(2);
+        gle::color(vec::hexcolor(0x000000), 0.8f);
+        gle::begin(GL_QUADS);
+        for(int i = NUM_STAT_FRAMES - 1; i > 0; i--)
+        {
+            uint64_t ns = stats_get(STAT_FRAME, NUM_STAT_FRAMES - i);
+            h = ns / 1000000000.0 * 10 * height;
+            gle::attribf(x, y+height);
+            gle::attribf(x+w, y+height);
+            gle::attribf(x+w, y+height-h);
+            gle::attribf(x, y+height-h);
+            x -= w;
+        }
+        xtraverts += gle::end();
+
+        gle::color(vec::hexcolor(0xff0000), 0.8f);
+        gle::begin(GL_QUADS);
+        x = posx + width;
+        y = posy;
+        for(int i = NUM_STAT_FRAMES - 1; i > 0; i--)
+        {
+            uint64_t ns = stats_get(STAT_COMPILE, NUM_STAT_FRAMES - i);
+            h = ns / 1000000000.0 * 10 * height;
+            y = posy - accum[i];
+            accum[i] += h;
+            gle::attribf(x, y+height);
+            gle::attribf(x+w, y+height);
+            gle::attribf(x+w, y+height-h);
+            gle::attribf(x, y+height-h);
+            x -= w;
+        }
+        xtraverts += gle::end();
+
+        gle::color(vec::hexcolor(0x00ff00), 0.8f);
+        gle::begin(GL_QUADS);
+        x = posx + width;
+        y = posy;
+        for(int i = NUM_STAT_FRAMES - 1; i > 0; i--)
+        {
+            uint64_t ns = stats_get(STAT_COLLIDE, NUM_STAT_FRAMES - i);
+            h = ns / 1000000000.0 * 10 * height;
+            y = posy - accum[i];
+            accum[i] += h;
+            gle::attribf(x, y+height);
+            gle::attribf(x+w, y+height);
+            gle::attribf(x+w, y+height-h);
+            gle::attribf(x, y+height-h);
+            x -= w;
+        }
+        xtraverts += gle::end();
+
+        gle::color(vec::hexcolor(0x0033ff), 0.8f);
+        gle::begin(GL_QUADS);
+        x = posx + width;
+        y = posy;
+        for(int i = NUM_STAT_FRAMES - 1; i > 0; i--)
+        {
+            uint64_t ns = stats_get(STAT_LOAD, NUM_STAT_FRAMES - i);
+            h = ns / 1000000000.0 * 10 * height;
+            y = posy - accum[i];
+            accum[i] += h;
+            gle::attribf(x, y+height);
+            gle::attribf(x+w, y+height);
+            gle::attribf(x+w, y+height-h);
+            gle::attribf(x, y+height-h);
+            x -= w;
+        }
+        xtraverts += gle::end();
+
+        gle::color(vec::hexcolor(0xff00ff), 0.8f);
+        gle::begin(GL_QUADS);
+        x = posx + width;
+        y = posy;
+        for(int i = NUM_STAT_FRAMES - 1; i > 0; i--)
+        {
+            uint64_t ns = stats_get(STAT_RECORD, NUM_STAT_FRAMES - i);
+            h = ns / 1000000000.0 * 10 * height;
+            y = posy - accum[i];
+            accum[i] += h;
+            gle::attribf(x, y+height);
+            gle::attribf(x+w, y+height);
+            gle::attribf(x+w, y+height-h);
+            gle::attribf(x, y+height-h);
+            x -= w;
+        }
+        xtraverts += gle::end();
+
+        hudshader->set();
+        popfont();
+    }
+
     void drawhud(bool noview)
     {
         hudmatrix.ortho(0, hudwidth, hudheight, 0, -1, 1);
@@ -3627,6 +3734,7 @@ namespace hud
             else if(gs_playing(game::gamestate) && game::focus == &game::player1 && game::focus->state == CS_ALIVE && game::inzoom())
                 drawzoom(hudwidth, hudheight);
         }
+        drawstats();
         drawconsole(showconsole < 2 || noview ? 0 : 1, hudwidth, hudheight, edge*2, edge+top, hudwidth-edge*2, consolefade);
         if(showconsole >= 2 && !noview && showconsole && showhud)
             drawconsole(2, hudwidth, hudheight, left, hudheight-edge-bottom, showfps >= 2 || showstats >= (m_edit(game::gamemode) ? 1 : 2) ? (hudwidth-left*2)/2-edge*4 : ((hudwidth-left*2)/2-edge*4)*2, consolefade);

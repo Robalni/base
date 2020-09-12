@@ -1,3 +1,4 @@
+#include "stats.h"
 #include <algorithm>
 using std::swap;
 
@@ -116,6 +117,7 @@ struct aviwriter
 
     void close()
     {
+        uint64_t start_time = get_time_ns();
         if(!f) return;
         flushsegment();
 
@@ -173,6 +175,8 @@ struct aviwriter
         f->seek(0, SEEK_END);
 
         DELETEP(f);
+        uint64_t end_time = get_time_ns();
+        stats_add(STAT_RECORD, end_time - start_time);
     }
 
 
@@ -208,6 +212,7 @@ struct aviwriter
 
     bool open()
     {
+        uint64_t start_time = get_time_ns();
         f = openfile(filename, "wb");
         if(!f) return false;
 
@@ -384,6 +389,8 @@ struct aviwriter
 
         nextsegment();
 
+        uint64_t end_time = get_time_ns();
+        stats_add(STAT_RECORD, end_time - start_time);
         return true;
     }
 
@@ -718,6 +725,8 @@ struct aviwriter
 
     bool writevideoframe(const uchar *pixels, uint srcw, uint srch, int format, uint frame)
     {
+        uint64_t start_time = get_time_ns();
+
         if(frame < videoframes) return true;
 
         switch(format)
@@ -738,6 +747,8 @@ struct aviwriter
 
         writechunk("00dc", format == VID_YUV420 ? pixels : yuv, framesize);
 
+        uint64_t end_time = get_time_ns();
+        stats_add(STAT_RECORD, end_time - start_time);
         return true;
     }
 
@@ -1140,7 +1151,10 @@ namespace recorder
 
     void capture(bool overlay)
     {
+        uint64_t start_time = get_time_ns();
         if(readbuffer() && overlay) drawhud();
+        uint64_t end_time = get_time_ns();
+        stats_add(STAT_RECORD, end_time - start_time);
     }
 }
 

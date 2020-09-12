@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "stats.h"
 
 VAR(0, oqdynent, 0, 1, 1);
 VAR(0, animationinterpolationtime, 0, 200, 1000);
@@ -435,6 +436,7 @@ void preloadusedmapmodels(bool msg, bool bih)
 
 model *loadmodel(const char *name, int i, bool msg)
 {
+    uint64_t start_time = get_time_ns();
     if(!name)
     {
         if(!mapmodels.inrange(i)) return NULL;
@@ -467,6 +469,8 @@ model *loadmodel(const char *name, int i, bool msg)
         m->preloadshaders();
     }
     if(mapmodels.inrange(i) && !mapmodels[i].m) mapmodels[i].m = m;
+    uint64_t end_time = get_time_ns();
+    stats_add(STAT_LOAD, end_time - start_time);
     return m;
 }
 
